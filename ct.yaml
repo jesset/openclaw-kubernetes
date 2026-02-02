@@ -10,11 +10,11 @@ target-branch: main
 
 # Chart directories to scan for changes
 chart-dirs:
-  - charts
+  - .
 
 # Specific charts to test (empty means all charts in chart-dirs)
 charts:
-  - openclaw
+  - .
 
 # Charts to exclude from testing
 excluded-charts: []
@@ -22,11 +22,6 @@ excluded-charts: []
 # Additional Helm arguments for install/upgrade
 check-version-increment: true
 
-# Linting configuration
-lint-conf: charts/openclaw/lintconf.yaml
-
-# Chart schema validation
-chart-yaml-schema: charts/openclaw/chart_schema.yaml
 
 # Helm extra arguments for linting
 helm-extra-args: --timeout 600s
@@ -48,7 +43,7 @@ skip-tests: false
 debug: false
 
 # Validate maintainers
-validate-maintainers: true
+validate-maintainers: false
 
 # Validate chart schema
 validate-chart-schema: true

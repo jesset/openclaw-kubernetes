@@ -32,8 +32,31 @@ spec:
       serviceAccountName: {{ include "openclaw.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      {{- with .Values.initContainers }}
       initContainers:
+        - name: init-openclaw-data
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              mkdir -p /openclaw-data
+              if [ -d /home/node/.openclaw ] && [ -z "$(ls -A /openclaw-data 2>/dev/null)" ]; then
+                cp -a /home/node/.openclaw/. /openclaw-data/
+              fi
+              if [ -f /etc/openclaw/openclaw.json ] && [ ! -f /openclaw-data/openclaw.json ]; then
+                cp /etc/openclaw/openclaw.json /openclaw-data/openclaw.json
+              fi
+          volumeMounts:
+            - name: data
+              mountPath: /openclaw-data
+            - name: config
+              mountPath: /etc/openclaw
+              readOnly: true
+      {{- with .Values.initContainers }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
       containers:
@@ -59,7 +82,7 @@ spec:
             - name: NODE_ENV
               value: "production"
             - name: OPENCLAW_DATA_DIR
-              value: "/data"
+              value: "/home/node/.openclaw"
             {{- if .Values.secrets.existingSecret }}
             # API Keys from existing secret
             - name: ANTHROPIC_API_KEY
@@ -153,7 +176,7 @@ spec:
             {{- end }}
             # Config file path
             - name: OPENCLAW_CONFIG_PATH
-              value: "/etc/openclaw/openclaw.json"
+              value: "/home/node/.openclaw/openclaw.json"
             {{- with .Values.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
@@ -204,7 +227,7 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
             - name: data
-              mountPath: /data
+              mountPath: /home/node/.openclaw
             - name: config
               mountPath: /etc/openclaw
             {{- with .Values.extraVolumeMounts }}

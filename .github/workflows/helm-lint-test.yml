@@ -1,0 +1,26 @@
+name: Helm Lint and Template
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  lint-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+      - name: Setup chart-testing
+        uses: helm/chart-testing-action@v2
+      - name: ct lint
+        run: ct lint --config ct.yaml
+      - name: Helm lint
+        run: ./scripts/helm-lint.sh
+      - name: Helm template
+        run: ./scripts/helm-test.sh

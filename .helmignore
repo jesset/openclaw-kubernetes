@@ -34,10 +34,13 @@ tests/
 .github/
 .gitlab-ci.yml
 .travis.yml
+scripts/
+
+# Chart publishing artifacts
+.chart-repo/
 
 # Documentation (not needed in chart package)
 docs/
-*.md
 
 # Local development files
 local-values.yaml

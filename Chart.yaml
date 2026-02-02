@@ -1,7 +1,7 @@
 apiVersion: v2
 appVersion: latest
 description: A Helm chart for OpenClaw (Clawdbot) - Personal AI Assistant Gateway
-home: https://github.com/openclaw/openclaw-kubernetes
+home: https://github.com/feiskyer/openclaw-kubernetes
 keywords:
 - openclaw
 - clawdbot
@@ -12,6 +12,6 @@ keywords:
 - websocket
 name: openclaw
 sources:
-- https://github.com/openclaw/openclaw-kubernetes
+- https://github.com/feiskyer/openclaw-kubernetes
 type: application
-version: 0.1.0
+version: 0.1.1
