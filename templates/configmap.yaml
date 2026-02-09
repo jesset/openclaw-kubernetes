@@ -27,8 +27,8 @@ data:
   codex-config.toml: |
     # Codex CLI Configuration
     # This configuration uses LiteLLM as the model provider gateway
-    model = "gpt-5.2-codex"
-    model_provider = "github"
+    model = {{ .Values.litellm.model | quote }}
+    model_provider = "litellm"
     model_verbosity = "medium"
     approval_policy = "on-failure"
     sandbox_mode = "workspace-write"
@@ -46,8 +46,8 @@ data:
     personality = true
 
     # Model providers (LiteLLM proxy)
-    [model_providers.github]
-    name     = "Github"
+    [model_providers.litellm]
+    name     = "LiteLLM"
     base_url = {{ $litellmUrl | quote }}
     http_headers = { "Authorization"= "Bearer sk-dummy" }
     wire_api = "responses"
@@ -58,14 +58,11 @@ data:
   claude-settings.json: |
     {
       "env": {
-        "ANTHROPIC_BASE_URL": {{ $litellmUrl | quote }},
-        "ANTHROPIC_AUTH_TOKEN": "sk-dummy",
-        "ANTHROPIC_MODEL": "claude-opus-4.6",
-        "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-4.5",
-        "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-4.6",
-        "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gpt-5-mini",
-        "DISABLE_NON_ESSENTIAL_MODEL_CALLS": "1",
         "DISABLE_TELEMETRY": "1",
+        "ANTHROPIC_AUTH_TOKEN": "sk-dummy",
+        "ANTHROPIC_BASE_URL": {{ $litellmUrl | quote }},
+        "ANTHROPIC_MODEL": {{ .Values.litellm.model | quote }},
+        "DISABLE_NON_ESSENTIAL_MODEL_CALLS": "1",
         "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
         "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
         "CLAUDE_CODE_ATTRIBUTION_HEADER": "0"
@@ -104,9 +101,5 @@ data:
           "Read(**/*.pem)",
           "Read(**/*.key)"
         ]
-      },
-      "statusLine": {
-        "type": "command",
-        "command": "~/.claude/status-line.sh"
       }
     }

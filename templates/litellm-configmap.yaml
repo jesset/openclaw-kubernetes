@@ -15,7 +15,7 @@ data:
     model_list:
     {{- if eq .Values.litellm.secrets.provider "github_copilot" }}
     - model_name: {{ .Values.litellm.model | quote }}
-      {{- if not (hasPrefix "claude" .Values.litellm.model) }}
+      {{- if hasPrefix "gpt" .Values.litellm.model }}
       model_info:
         mode: responses
         supports_vision: true
@@ -26,10 +26,25 @@ data:
         extra_headers:
           editor-version: "vscode/1.95.0"
           editor-plugin-version: "copilot-chat/0.26.7"
+    - model_name: "*"
+      litellm_params:
+        model: "github_copilot/*"
+        drop_params: true
+        extra_headers:
+          editor-version: "vscode/1.95.0"
+          editor-plugin-version: "copilot-chat/0.26.7"
     {{- else }}
     - model_name: {{ .Values.litellm.model | quote }}
       litellm_params:
         model: {{ printf "%s/%s" .Values.litellm.secrets.provider .Values.litellm.model | quote }}
+        drop_params: true
+        api_key: "os.environ/apiKey"
+        {{- if .Values.litellm.secrets.apiBase }}
+        api_base: {{ .Values.litellm.secrets.apiBase | quote }}
+        {{- end }}
+    - model_name: "*"
+      litellm_params:
+        model: {{ printf "%s/*" .Values.litellm.secrets.provider | quote }}
         drop_params: true
         api_key: "os.environ/apiKey"
         {{- if .Values.litellm.secrets.apiBase }}
