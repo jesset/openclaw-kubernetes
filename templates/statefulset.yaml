@@ -40,6 +40,8 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
           command:
             - sh
             - -c
@@ -167,6 +169,9 @@ spec:
             # Config file path
             - name: OPENCLAW_CONFIG_PATH
               value: "/home/vibe/.openclaw/openclaw.json"
+            # NPM cache directory (avoid read-only filesystem issues)
+            - name: npm_config_cache
+              value: "/home/vibe/.openclaw/.npm-cache"
             {{- with .Values.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}

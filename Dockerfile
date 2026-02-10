@@ -26,7 +26,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   ripgrep \
   sudo \
   tmux \
+  zip \
   unzip \
+  xz-utils \
   vim \
   wget \
   zsh \
@@ -97,6 +99,10 @@ RUN npm install -g \
   puppeteer-extra-plugin-stealth \
   @steipete/bird \
   && npx playwright install chromium --with-deps
+
+# Install extra plugins (China IMs)
+RUN openclaw plugins install https://github.com/soimy/clawdbot-channel-dingtalk.git
+RUN openclaw plugins install @sunnoy/wecom
 
 # Install uv via official installer
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
