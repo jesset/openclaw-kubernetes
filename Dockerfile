@@ -30,6 +30,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   vim \
   wget \
   zsh \
+  fonts-liberation fonts-noto-cjk fonts-noto-color-emoji \
+  file ffmpeg \
   && apt-get clean -y \
   && rm -rf /var/lib/apt/lists/*
 
@@ -50,6 +52,9 @@ RUN KUBECTL_VERSION=$(curl -fsSL https://dl.k8s.io/release/stable.txt) && \
     echo "$(cat /tmp/kubectl.sha256)  /usr/local/bin/kubectl" | sha256sum --check && \
     chmod +x /usr/local/bin/kubectl && \
     rm /tmp/kubectl.sha256
+
+# Install Bun to system path
+RUN curl -fsSL https://bun.com/install | BUN_INSTALL=/usr/local  bash
 
 # Create vibe user
 RUN groupadd --gid 1024 vibe && \
@@ -81,6 +86,17 @@ ENV CODEX_UNSAFE_ALLOW_NO_SANDBOX=1
 
 # Install npm global tools
 RUN npm install -g @openai/codex openclaw
+
+# Install extra npm tools
+RUN npm install -g \
+  opencode-ai@latest \
+  playwright \
+  playwright-extra \
+  clawhub \
+  firecrawl-cli \
+  puppeteer-extra-plugin-stealth \
+  @steipete/bird \
+  && npx playwright install chromium --with-deps
 
 # Install uv via official installer
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
