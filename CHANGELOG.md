@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.1.16 (2026-02-24)
+
+- Fix Node 22+ Happy Eyeballs (autoSelectFamily) breaking Telegram and external API calls on dual-stack clusters — add `NODE_OPTIONS=--dns-result-order=ipv4first` to container env
+- Fix Telegram connectivity on dual-stack clusters — inject `channels.telegram.network.autoSelectFamily: false` into `openclaw.json` (applies to both gateway and embedded agent modes)
+- Add `secrets.telegramTokenFile` — read bot token from a mounted file instead of env var for better security
+
 ## v0.1.15 (2026-02-24)
 
 - Switch to headed Chrome with noVNC GUI access on port 6080 (supervisord manages Xvfb, Fluxbox, x11vnc, noVNC, openclaw)
