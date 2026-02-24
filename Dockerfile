@@ -26,6 +26,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   python3-pip \
   ripgrep \
   sudo \
+  supervisor \
   tmux \
   unzip \
   vim \
@@ -43,6 +44,18 @@ RUN curl -fsSL https://dl.google.com/linux/linux_signing_key.pub \
     apt-get install -y --no-install-recommends google-chrome-stable && \
     apt-get clean -y && \
     rm -rf /var/lib/apt/lists/*
+
+# Install headed Chrome GUI stack (Xvfb, VNC, noVNC)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  dbus-x11 \
+  fluxbox \
+  fonts-noto-cjk \
+  novnc \
+  websockify \
+  x11vnc \
+  xvfb \
+  && apt-get clean -y \
+  && rm -rf /var/lib/apt/lists/*
 
 # Install kubectl (latest stable)
 RUN KUBECTL_VERSION=$(curl -fsSL https://dl.k8s.io/release/stable.txt) && \
@@ -87,10 +100,6 @@ ENV CODEX_UNSAFE_ALLOW_NO_SANDBOX=1
 RUN npm install -g @openai/codex openclaw clawhub && \
   npm cache clean --force
 
-# Install openclaw channel plugins (Skipping now for security reasons)
-# RUN openclaw plugins install @openclaw/feishu
-# RUN openclaw plugins install @openclaw/msteams
-
 # Install uv via official installer
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 
@@ -108,10 +117,19 @@ COPY --chown=vibe:vibe configs/codex-config.toml /home/vibe/.codex/config.toml
 COPY --chown=vibe:vibe configs/claude-settings.json /home/vibe/.claude/settings.json
 COPY --chown=vibe:vibe configs/kubeconfig /home/vibe/.kube/config
 
+# Virtual display environment for headed Chrome
+ENV DISPLAY=:99
+
 # Environments for vibe-kanban
 ENV FRONTEND_PORT=8080
 ENV HOST=0.0.0.0
 EXPOSE 8080
 
-# Entrypoint starts openclaw gateway
-ENTRYPOINT [ "openclaw", "gateway", "--allow-unconfigured"]
+# noVNC web interface port
+EXPOSE 6080
+
+# Copy entrypoint script
+COPY --chown=vibe:vibe configs/entrypoint.sh /usr/local/bin/entrypoint.sh
+
+# Entrypoint starts supervisord (manages Xvfb, VNC, noVNC, openclaw)
+ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]

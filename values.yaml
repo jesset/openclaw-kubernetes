@@ -206,14 +206,14 @@ openclaw:
     agents:
       defaults:
         verboseDefault: "on"
-    # -- Browser configuration for headless Chrome
+    # -- Browser configuration for headed Chrome (GUI visible via noVNC)
     browser:
       enabled: true
       remoteCdpTimeoutMs: 1500
       remoteCdpHandshakeTimeoutMs: 3000
       color: "#FF4500"
       executablePath: "/usr/bin/google-chrome"
-      headless: true
+      headless: false
       noSandbox: true
       attachOnly: false
       defaultProfile: "openclaw"

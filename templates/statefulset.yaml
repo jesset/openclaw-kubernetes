@@ -59,21 +59,23 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command:
-            - openclaw
-            - gateway
+          args:
             - --bind
             - lan
             - --port
             - {{ .Values.openclaw.config.gateway.port | quote }}
-            - --allow-unconfigured
           ports:
             - name: gateway
               containerPort: {{ .Values.service.targetPort }}
               protocol: TCP
+            - name: novnc
+              containerPort: 6080
+              protocol: TCP
           env:
             - name: NODE_ENV
               value: "production"
+            - name: DISPLAY
+              value: ":99"
             - name: OPENCLAW_STATE_DIR
               value: "/home/vibe/.openclaw"
             {{- if .Values.secrets.existingSecret }}

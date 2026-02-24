@@ -20,5 +20,9 @@ spec:
       nodePort: {{ . }}
       {{- end }}
       {{- end }}
+    - port: 6080
+      targetPort: 6080
+      protocol: TCP
+      name: novnc
   selector:
     {{- include "openclaw.selectorLabels" . | nindent 4 }}
