@@ -13,7 +13,7 @@ data:
     {{- $config := deepCopy .Values.openclaw.config }}
     {{- if .Values.litellm.enabled }}
     {{- $api := "openai-completions" }}
-    {{- if hasPrefix "claude" .Values.litellm.model }}
+    {{- if contains "claude" .Values.litellm.model }}
     {{- $api = "anthropic-messages" }}
     {{- else if hasPrefix "gpt" .Values.litellm.model }}
     {{- $api = "openai-responses" }}

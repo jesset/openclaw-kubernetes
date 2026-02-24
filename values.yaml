@@ -200,6 +200,8 @@ openclaw:
     # -- Gateway server configuration
     gateway:
       port: 18789
+      controlUi:
+        dangerouslyAllowHostHeaderOriginFallback: true
     logging:
       level: "info"
     # -- Agent defaults

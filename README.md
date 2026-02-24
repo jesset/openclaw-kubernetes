@@ -54,6 +54,42 @@ Charts are published as OCI artifacts in GHCR.
 
    Then open <http://localhost:18789/?token=$gatewayToken> in your browser.
 
+1) (Optional) View the Chrome browser GUI via noVNC:
+
+   ```bash
+   kubectl --namespace openclaw port-forward openclaw-0 6080:6080
+   ```
+
+   Then open <http://localhost:6080/vnc.html> in your browser to see the Chrome desktop.
+
+## Browser GUI
+
+Chrome runs in headed mode inside a virtual display. Access the desktop via [noVNC](https://novnc.com/) on port **6080** to watch browser automation in real time.
+
+<details>
+<summary>How it works</summary>
+
+supervisord manages the full GUI stack inside the container:
+
+1. **Xvfb** — virtual framebuffer (display `:99`)
+2. **Fluxbox** — lightweight window manager
+3. **x11vnc** — VNC server on port `5900` (localhost only)
+4. **websockify + noVNC** — bridges VNC to WebSocket, served on port `6080`
+5. **OpenClaw gateway** — launches Chrome against `DISPLAY=:99`
+
+All processes auto-restart on failure.
+
+Environment variables:
+
+| Variable | Default | Description |
+|---|---|---|
+| `DISPLAY_NUM` | `99` | X display number |
+| `SCREEN_RESOLUTION` | `1920x1080x24` | Virtual screen resolution |
+| `VNC_PORT` | `5900` | Internal VNC port (not exposed externally) |
+| `NOVNC_PORT` | `6080` | noVNC web UI port |
+
+</details>
+
 ## Upgrade / Uninstall
 
 ```bash
@@ -106,9 +142,9 @@ For providers with custom endpoints, set `litellm.secrets.apiBase` to the base U
 
 Set `litellm.model` to configure which model to proxy (default: `claude-opus-4.6`). The API format in `openclaw.json` is automatically determined:
 
-- `claude*` models use `anthropic-messages`
-- `gpt*` models use `openai-responses`
-- Other models use `openai-completions`
+- Models containing `claude` (e.g. `claude-opus-4.6`, `vertex_ai/claude-opus-4-6`) use `anthropic-messages`
+- Models prefixed with `gpt` use `openai-responses`
+- All other models use `openai-completions`
 
 </details>
 
