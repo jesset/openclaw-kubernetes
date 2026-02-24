@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.1.13 (2026-02-24)
+
+- Add compaction config with memoryFlush to agent defaults
+- Add optional memory search (semantic search over conversation history), enabled when both baseUrl and apiKey are provided
+
 ## v0.1.12 (2026-02-24)
 
 - Remove unused probe exec.command and relax liveness probe timing
