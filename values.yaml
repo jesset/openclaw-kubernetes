@@ -221,6 +221,19 @@ openclaw:
         openclaw:
           cdpPort: 18800
           color: "#FF4500"
+  # -- Memory search configuration (semantic search over conversation history)
+  # Only enabled when both memorySearch.baseUrl and memorySearch.apiKey are provided
+  memorySearch:
+    # -- Embedding provider
+    provider: "openai"
+    # -- Embedding model
+    model: "text-embedding-3-small"
+    # -- Remote embedding service URL (required to enable memory search)
+    baseUrl: ""
+    # -- API key for the remote embedding service (required to enable memory search)
+    apiKey: ""
+    # -- Extra paths to index for memory search
+    extraPaths: []
 
 
 # -- Secrets configuration

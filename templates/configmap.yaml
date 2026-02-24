@@ -27,6 +27,39 @@ data:
     {{- end }}
     {{- $_ := set $config "agents" (dict "defaults" $agentDefaults) }}
     {{- end }}
+    {{- /* Enable compaction for agent conversations */}}
+    {{- $compaction := dict "reserveTokensFloor" (int 20000) "memoryFlush" (dict "enabled" true "softThresholdTokens" (int 4000)) }}
+    {{- $agentsCurrent := dig "agents" (dict) $config }}
+    {{- $defaultsCurrent := dig "defaults" (dict) $agentsCurrent }}
+    {{- $_ := set $defaultsCurrent "compaction" $compaction }}
+    {{- $_ := set $agentsCurrent "defaults" $defaultsCurrent }}
+    {{- $_ := set $config "agents" $agentsCurrent }}
+    {{- /* Enable memory search when both baseUrl and apiKey are configured */}}
+    {{- if and (dig "memorySearch" "baseUrl" "" .Values.openclaw) (dig "memorySearch" "apiKey" "" .Values.openclaw) }}
+    {{- $memorySearch := dict
+      "provider" (dig "memorySearch" "provider" "openai" .Values.openclaw)
+      "model" (dig "memorySearch" "model" "text-embedding-3-small" .Values.openclaw)
+      "fallback" "openai"
+      "remote" (dict
+        "baseUrl" .Values.openclaw.memorySearch.baseUrl
+        "apiKey" .Values.openclaw.memorySearch.apiKey
+        "headers" (dict)
+        "batch" (dict "enabled" true "concurrency" (int 2))
+      )
+      "query" (dict "hybrid" (dict "enabled" true "vectorWeight" 0.7 "textWeight" 0.3 "candidateMultiplier" (int 4)))
+      "cache" (dict "enabled" true "maxEntries" (int 50000))
+      "experimental" (dict "sessionMemory" true)
+      "sources" (list "memory" "sessions")
+      "sync" (dict "watch" true "sessions" (dict "deltaBytes" (int 100000) "deltaMessages" (int 50)))
+      "store" (dict "vector" (dict "enabled" true))
+      "extraPaths" .Values.openclaw.memorySearch.extraPaths
+    }}
+    {{- $agentsMem := dig "agents" (dict) $config }}
+    {{- $defaultsMem := dig "defaults" (dict) $agentsMem }}
+    {{- $_ := set $defaultsMem "memorySearch" $memorySearch }}
+    {{- $_ := set $agentsMem "defaults" $defaultsMem }}
+    {{- $_ := set $config "agents" $agentsMem }}
+    {{- end }}
     {{- /* Enable web search when Brave or Perplexity API key is configured */}}
     {{- if or .Values.secrets.braveApiKey .Values.secrets.perplexityApiKey }}
     {{- $webSearchProvider := "brave" }}
