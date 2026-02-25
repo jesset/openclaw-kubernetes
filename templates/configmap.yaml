@@ -6,6 +6,14 @@ metadata:
     {{- include "openclaw.labels" . | nindent 4 }}
 data:
   {{- $litellmUrl := "http://localhost:4000" }}
+  {{- $embeddingApiKey := .Values.litellm.secrets.embeddingApiKey }}
+  {{- if and .Values.litellm.enabled (not $embeddingApiKey) }}
+  {{- $litellmSecretName := include "openclaw.litellm.secretName" . }}
+  {{- $existingSecret := lookup "v1" "Secret" .Release.Namespace $litellmSecretName }}
+  {{- if and $existingSecret $existingSecret.data }}
+  {{- $embeddingApiKey = (index $existingSecret.data "embeddingApiKey" | default "") }}
+  {{- end }}
+  {{- end }}
   {{- if .Values.litellm.enabled }}
   {{- $litellmUrl = printf "http://%s:%v" (include "openclaw.litellm.fullname" .) .Values.litellm.service.port }}
   {{- end }}
@@ -34,17 +42,20 @@ data:
     {{- $_ := set $defaultsCurrent "compaction" $compaction }}
     {{- $_ := set $agentsCurrent "defaults" $defaultsCurrent }}
     {{- $_ := set $config "agents" $agentsCurrent }}
-    {{- /* Enable memory search when both baseUrl and apiKey are configured */}}
-    {{- if and (dig "memorySearch" "baseUrl" "" .Values.openclaw) (dig "memorySearch" "apiKey" "" .Values.openclaw) }}
+    {{- /* Enable memory search when LiteLLM is enabled and embeddingApiKey is set.
+       embeddingApiKey may come from values or from an existing Secret preserved
+       via lookup, so upgrades don't silently disable memory search. Credentials
+       remain in the LiteLLM Secret; openclaw only sees the LiteLLM service URL. */}}
+    {{- if and .Values.litellm.enabled $embeddingApiKey }}
     {{- $memorySearch := dict
-      "provider" (dig "memorySearch" "provider" "openai" .Values.openclaw)
+      "provider" (.Values.litellm.secrets.embeddingProvider | default "openai")
       "model" (dig "memorySearch" "model" "text-embedding-3-small" .Values.openclaw)
       "fallback" "openai"
       "remote" (dict
-        "baseUrl" .Values.openclaw.memorySearch.baseUrl
-        "apiKey" .Values.openclaw.memorySearch.apiKey
+        "baseUrl" $litellmUrl
+        "apiKey" "not-needed"
         "headers" (dict)
-        "batch" (dict "enabled" true "concurrency" (int 2))
+        "batch" (dict "enabled" false "concurrency" (int 8))
       )
       "query" (dict "hybrid" (dict "enabled" true "vectorWeight" 0.7 "textWeight" 0.3 "candidateMultiplier" (int 4)))
       "cache" (dict "enabled" true "maxEntries" (int 50000))

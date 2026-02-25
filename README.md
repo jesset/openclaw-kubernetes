@@ -94,7 +94,7 @@ Environment variables:
 
 OpenClaw supports **semantic memory search** over the agent workspace (`MEMORY.md` + `memory/*.md` + session transcripts). When configured, the agent can recall prior conversations, decisions, and notes using natural-language queries via the `memory_search` tool.
 
-Memory search requires an **embedding service** (e.g. OpenAI, Gemini) to generate vector embeddings for indexed content. Configure it via `openclaw.memorySearch.*` values:
+Memory search requires an **embedding service** (e.g. OpenAI, Azure, Cohere) to generate vector embeddings for indexed content. Embedding credentials are stored in the **LiteLLM Secret** and routed through the LiteLLM proxy — they never appear in `openclaw.json` (a plain ConfigMap). Configure via `litellm.secrets.embedding*` values:
 
 ```bash
 helm install openclaw oci://ghcr.io/feiskyer/openclaw-kubernetes/openclaw \
@@ -102,11 +102,16 @@ helm install openclaw oci://ghcr.io/feiskyer/openclaw-kubernetes/openclaw \
   --set secrets.openclawGatewayToken=$gatewayToken \
   --set litellm.secrets.provider=anthropic \
   --set litellm.secrets.apiKey=<your-api-key> \
-  --set litellm.secrets.apiBase=<your-api-base> \
   --set litellm.model=claude-opus-4.6 \
   --set secrets.telegramBotToken=$telegramBotToken \
-  --set openclaw.memorySearch.baseUrl=https://api.openai.com/v1/ \
-  --set openclaw.memorySearch.apiKey=<your-openai-api-key>
+  --set litellm.secrets.embeddingProvider=openai \
+  --set litellm.secrets.embeddingApiKey=<your-openai-api-key>
+```
+
+To use a custom embedding endpoint (e.g. Azure OpenAI or a self-hosted service), also set `embeddingApiBase`:
+
+```bash
+  --set litellm.secrets.embeddingApiBase=https://my-endpoint.openai.azure.com/
 ```
 
 <details>
@@ -114,13 +119,13 @@ helm install openclaw oci://ghcr.io/feiskyer/openclaw-kubernetes/openclaw \
 
 | Value | Default | Description |
 |-------|---------|-------------|
-| `openclaw.memorySearch.provider` | `openai` | Embedding provider (`openai`, `gemini`, `voyage`, `mistral`) |
+| `litellm.secrets.embeddingProvider` | `openai` | Embedding provider (`openai`, `azure`, `cohere`, `voyage`, `mistral`, …) |
+| `litellm.secrets.embeddingApiKey` | `""` | API key for the embedding provider (**required** to enable memory search) |
+| `litellm.secrets.embeddingApiBase` | `""` | Base URL for the embedding provider (optional; omit for default provider endpoint) |
 | `openclaw.memorySearch.model` | `text-embedding-3-small` | Embedding model name |
-| `openclaw.memorySearch.baseUrl` | `""` | Remote embedding service URL (**required** to enable memory search) |
-| `openclaw.memorySearch.apiKey` | `""` | API key for the embedding service (**required** to enable memory search) |
 | `openclaw.memorySearch.extraPaths` | `[]` | Additional paths to index (directories or files, Markdown only) |
 
-Memory search is **only enabled** when both `baseUrl` and `apiKey` are provided. When enabled, the chart automatically configures:
+Memory search is **only enabled** when `litellm.enabled` is `true` and `litellm.secrets.embeddingApiKey` is set. The embedding provider may be different from the main chat model provider — for example, you can run `github_copilot` for chat and `openai` for embeddings. When enabled, the chart automatically configures:
 
 - **Hybrid search** (BM25 keyword + vector similarity) with 70/30 weighting
 - **Embedding cache** (up to 50,000 entries) to avoid re-embedding unchanged content
@@ -172,7 +177,7 @@ The chart includes a [LiteLLM](https://github.com/BerriAI/litellm) proxy between
 LiteLLM provides:
 
 1. **Provider decoupling** -- OpenClaw talks only to the local LiteLLM endpoint. Switching providers (e.g. GitHub Copilot to Anthropic) requires only a Helm values change.
-2. **Credential isolation** -- API keys live in the LiteLLM Secret and are never injected into the OpenClaw container. OpenClaw authenticates to LiteLLM with a dummy token over the cluster-internal network.
+2. **Credential isolation** -- API keys (both chat model and embedding) live in the LiteLLM Secret and are never injected into the OpenClaw container or ConfigMap. OpenClaw authenticates to LiteLLM with a dummy token over the cluster-internal network.
 
 <details>
 <summary>How it works</summary>
@@ -403,7 +408,14 @@ Two modes:
 
 `secrets.openclawGatewayToken` is required when not using `secrets.existingSecret`.
 
-LiteLLM has its own secret (`<release>-litellm`) with keys `apiKey` and `apiBase`, configured via `litellm.secrets.*`.
+LiteLLM has its own secret (`<release>-litellm`) configured via `litellm.secrets.*`:
+
+| Key | Description |
+|-----|-------------|
+| `apiKey` | API key for the main chat model provider |
+| `apiBase` | Base URL for the main chat model provider (optional) |
+| `embeddingApiKey` | API key for the embedding provider (enables memory search when set) |
+| `embeddingApiBase` | Base URL for the embedding provider (optional) |
 
 ## Messaging Platforms
 

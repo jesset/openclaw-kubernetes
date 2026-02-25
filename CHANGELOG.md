@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.1.17 (2026-02-25)
+
+- Fix memory search credential exposure — move embedding `apiKey`, `apiBase`, and `provider` from `openclaw.memorySearch.*` (ConfigMap) into `litellm.secrets.embeddingApiKey/embeddingApiBase/embeddingProvider` (LiteLLM Secret); `openclaw.json` now points at the LiteLLM service URL with a dummy key
+- Route memory search embedding requests through LiteLLM proxy; add embedding model entry (`mode: embedding`) to LiteLLM `model_list` when `embeddingApiKey` is set; embedding provider is independently configurable from the main chat model provider
+- Disable embedding batch mode and set concurrency to 8
+
 ## v0.1.16 (2026-02-24)
 
 - Fix Node 22+ Happy Eyeballs (autoSelectFamily) breaking Telegram and external API calls on dual-stack clusters — add `NODE_OPTIONS=--dns-result-order=ipv4first` to container env

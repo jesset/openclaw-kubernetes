@@ -1,4 +1,12 @@
 {{- if .Values.litellm.enabled }}
+{{- $embeddingApiKey := .Values.litellm.secrets.embeddingApiKey }}
+{{- if not $embeddingApiKey }}
+{{- $litellmSecretName := include "openclaw.litellm.secretName" . }}
+{{- $existingSecret := lookup "v1" "Secret" .Release.Namespace $litellmSecretName }}
+{{- if and $existingSecret $existingSecret.data }}
+{{- $embeddingApiKey = (index $existingSecret.data "embeddingApiKey" | default "") }}
+{{- end }}
+{{- end }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -49,6 +57,18 @@ data:
         api_key: "os.environ/apiKey"
         {{- if .Values.litellm.secrets.apiBase }}
         api_base: {{ .Values.litellm.secrets.apiBase | quote }}
+        {{- end }}
+    {{- end }}
+    {{- /* Embedding model for memory search — credentials stay in the Secret */}}
+    {{- if $embeddingApiKey }}
+    - model_name: {{ .Values.openclaw.memorySearch.model | quote }}
+      model_info:
+        mode: embedding
+      litellm_params:
+        model: {{ printf "%s/%s" (.Values.litellm.secrets.embeddingProvider | default "openai") .Values.openclaw.memorySearch.model | quote }}
+        api_key: "os.environ/embeddingApiKey"
+        {{- if .Values.litellm.secrets.embeddingApiBase }}
+        api_base: "os.environ/embeddingApiBase"
         {{- end }}
     {{- end }}
     {{- end }}

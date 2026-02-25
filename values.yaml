@@ -224,16 +224,12 @@ openclaw:
           cdpPort: 18800
           color: "#FF4500"
   # -- Memory search configuration (semantic search over conversation history)
-  # Only enabled when both memorySearch.baseUrl and memorySearch.apiKey are provided
+  # Only enabled when litellm.enabled and litellm.secrets.embeddingApiKey are set.
+  # Credentials are kept in the LiteLLM Secret; openclaw.json only sees the
+  # LiteLLM service URL with a dummy key.
   memorySearch:
-    # -- Embedding provider
-    provider: "openai"
     # -- Embedding model
     model: "text-embedding-3-small"
-    # -- Remote embedding service URL (required to enable memory search)
-    baseUrl: ""
-    # -- API key for the remote embedding service (required to enable memory search)
-    apiKey: ""
     # -- Extra paths to index for memory search
     extraPaths: []
 
@@ -332,6 +328,16 @@ litellm:
     apiKey: ""
     # -- API base URL (optional, for custom endpoints)
     apiBase: ""
+    # -- API key for the embedding provider used by memory search
+    # When set (together with litellm.enabled), memory search is enabled and
+    # embedding requests are routed through LiteLLM so the key never appears
+    # in openclaw.json (a plain ConfigMap).
+    embeddingApiKey: ""
+    # -- Base URL for the embedding provider (optional; omit for default OpenAI endpoint)
+    embeddingApiBase: ""
+    # -- Embedding provider name: openai, azure, cohere, etc. (used to build the
+    # litellm_params model string, e.g. "openai/text-embedding-3-small")
+    embeddingProvider: "openai"
   # -- Persistent storage for LiteLLM data (~/.config/litellm)
   persistence:
     # -- Enable persistent storage
