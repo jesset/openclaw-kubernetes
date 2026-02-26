@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.1.19 (2026-02-26)
+
+- Remove `helm.sh/resource-policy: keep` annotation from both secret templates so secrets follow normal Helm lifecycle
+- Make openclaw secret annotations conditional on `.Values.secrets.annotations` being set
+
 ## v0.1.18 (2026-02-26)
 
 - Use ConfigMap for codex and claude configs instead of baked-in image files; init container seeds `codex-config.toml` and `claude-settings.json` from ConfigMap on every pod start
