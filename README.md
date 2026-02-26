@@ -111,7 +111,7 @@ helm install openclaw oci://ghcr.io/feiskyer/openclaw-kubernetes/openclaw \
 To use a custom embedding endpoint (e.g. Azure OpenAI or a self-hosted service), also set `embeddingApiBase`:
 
 ```bash
-  --set litellm.secrets.embeddingApiBase=https://my-endpoint.openai.azure.com/
+  --set litellm.secrets.embeddingApiBase=https://my-endpoint.openai.azure.com/openai/v1/
 ```
 
 <details>
