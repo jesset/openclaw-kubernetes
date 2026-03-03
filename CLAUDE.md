@@ -148,6 +148,10 @@ Optional browser-based terminal access via [ttyd](https://github.com/tsl0922/tty
 - **`ttyd.ingress.enabled`** (default: `false`) — Creates a dedicated Ingress resource for external access. Gated on both `ttyd.enabled` and `ttyd.ingress.enabled`.
 - **`ttyd.ingress.pathPrefix`** (default: `/ttyd/`) — URL path for the ingress rule. Kept in sync with ttyd's `--base-path` via the `TTYD_BASE_PATH` env var, so no ingress rewrite is needed (unlike noVNC which requires a separate rewrite rule).
 
+### Network Policies
+
+Optional egress-only NetworkPolicies that block access to the cloud instance metadata service (IMDS at 169.254.169.254). Controlled by `networkPolicy.enabled` (default: `false`). When enabled, creates one policy per component (OpenClaw and LiteLLM), each allowing all egress except IMDS. Ingress is not restricted.
+
 ### Values Presets
 
 - `values.yaml` — Full defaults with security hardening, resource limits, persistence enabled

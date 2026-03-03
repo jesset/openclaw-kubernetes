@@ -2,6 +2,7 @@
 
 ## v0.1.25 (2026-03-03)
 
+- Add optional NetworkPolicy for OpenClaw and LiteLLM pods that blocks egress to cloud IMDS (169.254.169.254) while allowing all other traffic; disabled by default (`networkPolicy.enabled: false`)
 - Fix Service selector matching both OpenClaw and LiteLLM pods by adding `app.kubernetes.io/component: gateway` label to OpenClaw selector labels
 - Add selector-isolation test (`helm-test-selectors.sh`) to CI that validates each Service matches exactly one workload and all workloads have distinct component labels
 

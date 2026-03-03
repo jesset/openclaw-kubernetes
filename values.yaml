@@ -416,6 +416,11 @@ litellm:
   # When empty, the default config (github_copilot models) is used.
   configOverride: ""
 
+# -- Network Policy configuration
+networkPolicy:
+  # -- Enable network policies (blocks egress to cloud instance metadata service)
+  enabled: false
+
 # -- Pod Disruption Budget configuration
 podDisruptionBudget:
   # -- Enable Pod Disruption Budget
