@@ -115,6 +115,13 @@ data:
     {{- $_ := set $telegram "tokenFile" .Values.secrets.telegramTokenFile }}
     {{- end }}
     {{- $_ := set $channels "telegram" $telegram }}
+    {{- /* When Slack is enabled, default replyToMode to "all" so bot replies
+       are threaded under the original message. */}}
+    {{- if hasKey $pluginEntries "slack" }}
+    {{- $slackConf := dig "slack" (dict) $channels }}
+    {{- $_ := set $slackConf "replyToMode" "all" }}
+    {{- $_ := set $channels "slack" $slackConf }}
+    {{- end }}
     {{- /* Apply DM access control (dmPolicy + allowFrom) to enabled channels.
        When policy differs from default ("pairing"), set dmPolicy explicitly.
        When allowFrom is non-empty, set both dmPolicy and allowFrom. */}}
