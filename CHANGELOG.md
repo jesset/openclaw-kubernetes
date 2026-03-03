@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.1.25 (2026-03-03)
+
+- Fix Service selector matching both OpenClaw and LiteLLM pods by adding `app.kubernetes.io/component: gateway` label to OpenClaw selector labels
+- Add selector-isolation test (`helm-test-selectors.sh`) to CI that validates each Service matches exactly one workload and all workloads have distinct component labels
+
 ## v0.1.24 (2026-03-03)
 
 - Add ttyd web-based terminal: install ttyd binary (pinned v1.7.7, multi-arch x86_64/aarch64) in Docker image, run as conditional supervisord process with `--base-path` synced to values, expose via Service port and optional Ingress; enabled by default (cluster-internal only), ingress requires explicit opt-in
