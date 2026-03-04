@@ -203,7 +203,7 @@ openclaw:
   config:
     gateway:
       port: 18789
-      host: "0.0.0.0"
+      bind: "lan"
     logging:
       level: "info"
     # -- Browser configuration for headless Chrome

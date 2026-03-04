@@ -414,9 +414,9 @@
                   "type": "integer",
                   "default": 18789
                 },
-                "host": {
+                "bind": {
                   "type": "string",
-                  "default": "0.0.0.0"
+                  "default": "lan"
                 }
               }
             },
