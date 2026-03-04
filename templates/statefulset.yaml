@@ -241,6 +241,15 @@ spec:
                   name: {{ include "openclaw.secretName" . }}
                   key: OPENCLAW_GATEWAY_TOKEN
             {{- end }}
+            {{- if .Values.litellm_external.enabled }}
+            # External LiteLLM API key
+            - name: LITELLM_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "openclaw.litellmExternal.secretName" . }}
+                  key: LITELLM_API_KEY
+                  optional: true
+            {{- end }}
             # Config file path
             - name: TTYD_ENABLED
               value: {{ .Values.ttyd.enabled | quote }}

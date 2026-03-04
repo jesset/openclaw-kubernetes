@@ -188,3 +188,60 @@ Return true if the ingress supports pathType
 {{- print "false" }}
 {{- end }}
 {{- end }}
+
+{{/*
+Validate that litellm.enabled and litellm_external.enabled are mutually exclusive
+*/}}
+{{- define "openclaw.validateLitellmConfig" -}}
+{{- if and .Values.litellm.enabled .Values.litellm_external.enabled -}}
+{{- fail "litellm.enabled and litellm_external.enabled are mutually exclusive. Please enable only one." -}}
+{{- end -}}
+{{- if .Values.litellm_external.enabled -}}
+{{- if not .Values.litellm_external.apiBase -}}
+{{- fail "litellm_external.apiBase is required when litellm_external.enabled is true" -}}
+{{- end -}}
+{{- if not .Values.litellm_external.model -}}
+{{- fail "litellm_external.model is required when litellm_external.enabled is true" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Calculate LiteLLM URL based on configuration
+*/}}
+{{- define "openclaw.litellmUrl" -}}
+{{- if .Values.litellm.enabled -}}
+{{- printf "http://%s:%v" (include "openclaw.litellm.fullname" .) .Values.litellm.service.port -}}
+{{- else if .Values.litellm_external.enabled -}}
+{{- .Values.litellm_external.apiBase -}}
+{{- else -}}
+{{- print "http://localhost:4000" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Calculate the model name for LiteLLM configuration
+*/}}
+{{- define "openclaw.litellmModel" -}}
+{{- if .Values.litellm.enabled -}}
+{{- .Values.litellm.model -}}
+{{- else if .Values.litellm_external.enabled -}}
+{{- .Values.litellm_external.model -}}
+{{- else -}}
+{{- print "claude-opus-4.6" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Determine if any LiteLLM is enabled (internal or external)
+*/}}
+{{- define "openclaw.litellmEnabled" -}}
+{{- or .Values.litellm.enabled .Values.litellm_external.enabled -}}
+{{- end -}}
+
+{{/*
+External LiteLLM Secret name
+*/}}
+{{- define "openclaw.litellmExternal.secretName" -}}
+{{- printf "%s-litellm-external" (include "openclaw.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end -}}

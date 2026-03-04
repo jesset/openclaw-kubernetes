@@ -442,6 +442,19 @@ networkPolicy:
   # -- Enable network policies (blocks egress to cloud instance metadata service)
   enabled: false
 
+# -- External LiteLLM Proxy configuration
+# Use this when connecting to an externally deployed LiteLLM instance
+# instead of deploying an internal one. Mutually exclusive with litellm.enabled.
+litellm_external:
+  # -- Enable external LiteLLM connection (mutually exclusive with litellm.enabled)
+  enabled: false
+  # -- External LiteLLM API base URL (e.g., "http://litellm.example.com:4000")
+  apiBase: ""
+  # -- API key for the external LiteLLM instance
+  apiKey: ""
+  # -- Model to use through the external LiteLLM
+  model: ""
+
 # -- Pod Disruption Budget configuration
 podDisruptionBudget:
   # -- Enable Pod Disruption Budget
