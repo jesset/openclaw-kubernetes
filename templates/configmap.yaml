@@ -58,6 +58,7 @@ data:
     {{- $_ := set $defaultsCurrent "compaction" $compaction }}
     {{- $_ := set $agentsCurrent "defaults" $defaultsCurrent }}
     {{- $_ := set $config "agents" $agentsCurrent }}
+<<<<<<< HEAD
     {{- /* Enable memory search when LiteLLM is enabled and either:
        1. embeddingApiKey is set (explicit embedding credentials), or
        2. provider is github_copilot (embeddings are included in Copilot auth).
@@ -70,6 +71,14 @@ data:
     {{- if eq .Values.litellm.secrets.provider "github_copilot" }}
     {{- $embeddingModel = "text-embedding-ada-002" }}
     {{- end }}
+=======
+    {{- /* Enable memory search when LiteLLM (built-in or external) is enabled and
+       embeddingApiKey is set. embeddingApiKey may come from values or from an
+       existing Secret preserved via lookup, so upgrades don't silently disable
+       memory search. Credentials remain in the LiteLLM Secret; openclaw only
+       sees the LiteLLM service URL. */}}
+    {{- if and (or .Values.litellm.enabled .Values.litellm_external.enabled) $embeddingApiKey }}
+>>>>>>> 82e7dba (fix(memory-search): compat with external litellm)
     {{- $memorySearch := dict
       "provider" (.Values.litellm.secrets.embeddingProvider | default "openai")
       "model" $embeddingModel
