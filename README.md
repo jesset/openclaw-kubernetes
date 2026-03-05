@@ -216,7 +216,7 @@ To use a custom embedding endpoint (e.g. Azure OpenAI or a self-hosted service),
 | `openclaw.memorySearch.model` | `text-embedding-3-small` | Embedding model name |
 | `openclaw.memorySearch.extraPaths` | `[]` | Additional paths to index (directories or files, Markdown only) |
 
-Memory search is **only enabled** when `litellm.enabled` is `true` and `litellm.secrets.embeddingApiKey` is set. The embedding provider may be different from the main chat model provider — for example, you can run `github_copilot` for chat and `openai` for embeddings. When enabled, the chart automatically configures:
+Memory search is **enabled** when `litellm.secrets.embeddingApiKey` is set **and** either `litellm.enabled` or `litellm_external.enabled` is `true`. The embedding provider may be different from the main chat model provider — for example, you can run `github_copilot` for chat and `openai` for embeddings. When enabled, the chart automatically configures:
 
 - **Hybrid search** (BM25 keyword + vector similarity) with 70/30 weighting
 - **Embedding cache** (up to 50,000 entries) to avoid re-embedding unchanged content

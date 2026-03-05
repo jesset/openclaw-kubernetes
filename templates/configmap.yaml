@@ -13,7 +13,7 @@ data:
   {{- $litellmApiKey = .Values.litellm_external.apiKey | default "not-needed" }}
   {{- end }}
   {{- $embeddingApiKey := .Values.litellm.secrets.embeddingApiKey }}
-  {{- if and .Values.litellm.enabled (not $embeddingApiKey) }}
+  {{- if and (or .Values.litellm.enabled .Values.litellm_external.enabled) (not $embeddingApiKey) }}
   {{- $litellmSecretName := include "openclaw.litellm.secretName" . }}
   {{- $existingSecret := lookup "v1" "Secret" .Release.Namespace $litellmSecretName }}
   {{- if and $existingSecret $existingSecret.data }}
@@ -45,18 +45,19 @@ data:
     {{- $_ := set $defaultsCurrent "compaction" $compaction }}
     {{- $_ := set $agentsCurrent "defaults" $defaultsCurrent }}
     {{- $_ := set $config "agents" $agentsCurrent }}
-    {{- /* Enable memory search when LiteLLM is enabled and embeddingApiKey is set.
-       embeddingApiKey may come from values or from an existing Secret preserved
-       via lookup, so upgrades don't silently disable memory search. Credentials
-       remain in the LiteLLM Secret; openclaw only sees the LiteLLM service URL. */}}
-    {{- if and .Values.litellm.enabled $embeddingApiKey }}
+    {{- /* Enable memory search when LiteLLM (built-in or external) is enabled and
+       embeddingApiKey is set. embeddingApiKey may come from values or from an
+       existing Secret preserved via lookup, so upgrades don't silently disable
+       memory search. Credentials remain in the LiteLLM Secret; openclaw only
+       sees the LiteLLM service URL. */}}
+    {{- if and (or .Values.litellm.enabled .Values.litellm_external.enabled) $embeddingApiKey }}
     {{- $memorySearch := dict
       "provider" (.Values.litellm.secrets.embeddingProvider | default "openai")
       "model" (dig "memorySearch" "model" "text-embedding-3-small" .Values.openclaw)
       "fallback" "openai"
       "remote" (dict
         "baseUrl" $litellmUrl
-        "apiKey" "not-needed"
+        "apiKey" ( $embeddingApiKey | default "not-needed")
         "headers" (dict)
         "batch" (dict "enabled" false "concurrency" (int 8))
       )

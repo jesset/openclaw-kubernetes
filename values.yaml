@@ -281,9 +281,9 @@ openclaw:
       msteams: []
 
   # -- Memory search configuration (semantic search over conversation history)
-  # Only enabled when litellm.enabled and litellm.secrets.embeddingApiKey are set.
-  # Credentials are kept in the LiteLLM Secret; openclaw.json only sees the
-  # LiteLLM service URL with a dummy key.
+  # Enabled when litellm.secrets.embeddingApiKey is set AND either litellm.enabled
+  # or litellm_external.enabled is true. Credentials are kept in the LiteLLM Secret;
+  # openclaw.json only sees the LiteLLM service URL with a dummy key.
   memorySearch:
     # -- Embedding model
     model: "text-embedding-3-small"
