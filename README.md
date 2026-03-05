@@ -1,6 +1,6 @@
 # OpenClaw Helm Chart
 
-Helm chart for [OpenClaw](https://openclaw.ai/) (gateway). Deploys a single-instance StatefulSet with persistent storage, secrets management, and an optional [LiteLLM](https://github.com/BerriAI/litellm) proxy for model routing.
+Helm chart for [OpenClaw](https://openclaw.ai/) (gateway). Deploys a single-instance StatefulSet with persistent storage, secrets management, and an optional [LiteLLM](https://github.com/BerriAI/litellm) proxy for model routing (or connection to an external LiteLLM instance).
 
 ## Requirements
 
@@ -313,6 +313,44 @@ To override the built-in config entirely, set `litellm.configOverride` with your
 
 </details>
 
+## External LiteLLM
+
+If you already run a LiteLLM instance outside the cluster (or in another namespace), you can point OpenClaw at it instead of deploying the built-in proxy. Set `litellm_external.enabled: true` and provide the endpoint URL, API key, and model name:
+
+```bash
+helm install openclaw oci://ghcr.io/feiskyer/openclaw-kubernetes/openclaw \
+   --create-namespace --namespace openclaw \
+   --set secrets.openclawGatewayToken=$gatewayToken \
+   --set secrets.telegramBotToken=$telegramBotToken \
+   --set litellm.enabled=false \
+   --set litellm_external.enabled=true \
+   --set litellm_external.apiBase=http://litellm.example.com:4000 \
+   --set litellm_external.apiKey=<your-litellm-api-key> \
+   --set litellm_external.model=claude-opus-4.6
+```
+
+> [!IMPORTANT]
+> `litellm.enabled` and `litellm_external.enabled` are **mutually exclusive**. The chart validates this at install/upgrade time and will fail if both are set to `true`.
+
+<details>
+<summary>Configuration reference</summary>
+
+| Value | Default | Description |
+|-------|---------|-------------|
+| `litellm_external.enabled` | `false` | Enable external LiteLLM connection |
+| `litellm_external.apiBase` | `""` | Base URL of the external LiteLLM instance (e.g. `http://litellm.example.com:4000`) |
+| `litellm_external.apiKey` | `""` | API key for the external LiteLLM instance |
+| `litellm_external.model` | `""` | Model to use through the external LiteLLM |
+
+When enabled, the chart:
+
+- Configures `openclaw.json` to route model requests to the external endpoint (same auto-detection logic for API format)
+- Creates a `<release>-litellm-external` Secret containing `LITELLM_API_KEY` (when `apiKey` is set)
+- Injects `LITELLM_API_KEY` as an environment variable into the OpenClaw container
+- Skips deploying the internal LiteLLM Deployment and Service
+
+</details>
+
 ## Values and configuration
 
 ### Quick reference
@@ -323,6 +361,7 @@ To override the built-in config entirely, set `litellm.configOverride` with your
 | `litellm.enabled` | `true` | Enable LiteLLM proxy for model routing |
 | `litellm.model` | `claude-opus-4.6` | Model to proxy through LiteLLM |
 | `litellm.secrets.provider` | `github_copilot` | Model provider (`github_copilot`, `anthropic`, `openai`) |
+| `litellm_external.enabled` | `false` | Use an external LiteLLM instance instead of internal proxy |
 | `persistence.enabled` | `true` | Enable persistent storage |
 | `persistence.size` | `10Gi` | Storage size for OpenClaw data |
 | `ingress.enabled` | `false` | Enable Ingress for external access |
@@ -507,6 +546,8 @@ LiteLLM has its own secret (`<release>-litellm`) configured via `litellm.secrets
 | `apiBase` | Base URL for the main chat model provider (optional) |
 | `embeddingApiKey` | API key for the embedding provider (enables memory search when set) |
 | `embeddingApiBase` | Base URL for the embedding provider (optional) |
+
+When using external LiteLLM (`litellm_external.enabled: true`), a separate secret (`<release>-litellm-external`) is created with the `LITELLM_API_KEY` key, sourced from `litellm_external.apiKey`.
 
 ## Messaging Platforms
 
